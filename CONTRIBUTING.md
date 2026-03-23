@@ -12,7 +12,7 @@ Thank you for your interest in contributing to the onX reference implementation.
 
 ## Development Workflow
 
-1. Create a branch from `main` for your change
+1. Create a branch from `develop` for your change
 2. Make your changes with clear, focused commits
 3. Run the build to verify: `npm run build`
 4. Open a pull request with a description of what and why
