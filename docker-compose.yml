@@ -1,0 +1,62 @@
+services:
+  juniper:
+    build: .
+    ports:
+      - "${PORT:-3000}:3000"
+    environment:
+      - NODE_ENV=production
+      - APP_MODE=${APP_MODE:-demo}
+      - DATA_MODE=${DATA_MODE:-memory}
+      - DATABASE_URL=${DATABASE_URL:-}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - GOOGLE_AI_API_KEY=${GOOGLE_AI_API_KEY:-}
+      - OLLAMA_URL=${OLLAMA_URL:-}
+      - OLLAMA_MODEL=${OLLAMA_MODEL:-}
+      - ONX_MCP_SERVER_URL=${ONX_MCP_SERVER_URL:-}
+      - SEED_DATA=${SEED_DATA:-false}
+      - SESSION_TTL_MINUTES=${SESSION_TTL_MINUTES:-30}
+      - MAX_MESSAGES_PER_SESSION=${MAX_MESSAGES_PER_SESSION:-20}
+    depends_on:
+      db:
+        condition: service_healthy
+        required: false
+    restart: unless-stopped
+
+  db:
+    image: postgres:16-alpine
+    profiles: [postgres]
+    environment:
+      POSTGRES_USER: juniper
+      POSTGRES_PASSWORD: juniper
+      POSTGRES_DB: juniper
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./db/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
+      - ./db/seed.sql:/docker-entrypoint-initdb.d/02-seed.sql
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U juniper"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  mcp-server:
+    profiles: [mcp]
+    build:
+      context: ${MCP_SERVER_PATH:-../../mcp-reference-server/server}
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - PORT=8080
+      - ADAPTER_TYPE=built-in
+      - ADAPTER_NAME=mock
+      - LOG_LEVEL=info
+    command: ["node", "dist/http-server.js"]
+    restart: unless-stopped
+
+volumes:
+  pgdata:

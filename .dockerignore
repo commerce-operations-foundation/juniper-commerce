@@ -1,0 +1,12 @@
+node_modules
+.next
+.env
+.env.local
+*.zip
+*.tar.gz
+.git
+.gitignore
+ninaad-ignore
+deploy.zip
+README.md
+JUNIPER-COMMERCE.md

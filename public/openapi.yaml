@@ -1,0 +1,358 @@
+openapi: 3.1.0
+info:
+  title: Juniper Commerce — onX API
+  description: |
+    REST API for the Juniper Commerce reference implementation of the onX (Order Network eXchange) standard.
+    Supports all 12 standard onX operations covering products, inventory, orders, fulfillments, and returns.
+  version: 2.0.0
+  contact:
+    name: Commerce Operations Foundation
+    url: https://commerceopsfoundation.org
+  license:
+    name: MIT
+
+servers:
+  - url: /api/onx
+    description: Local onX API
+
+paths:
+  /products:
+    get:
+      summary: Get Products
+      operationId: getProducts
+      tags: [Products]
+      parameters:
+        - name: status
+          in: query
+          schema: { type: string, enum: [active, inactive] }
+        - name: limit
+          in: query
+          schema: { type: integer, default: 50 }
+        - name: offset
+          in: query
+          schema: { type: integer, default: 0 }
+        - name: includeVariants
+          in: query
+          schema: { type: boolean, default: false }
+      responses:
+        '200':
+          description: Product list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items: { type: array, items: { $ref: '#/components/schemas/Product' } }
+                  total: { type: integer }
+
+  /product-variants:
+    get:
+      summary: Get Product Variants
+      operationId: getProductVariants
+      tags: [Products]
+      parameters:
+        - name: productId
+          in: query
+          schema: { type: string }
+        - name: sku
+          in: query
+          schema: { type: string }
+      responses:
+        '200':
+          description: Variant list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items: { type: array, items: { $ref: '#/components/schemas/ProductVariant' } }
+                  total: { type: integer }
+
+  /inventory:
+    get:
+      summary: Get Inventory
+      operationId: getInventory
+      tags: [Inventory]
+      parameters:
+        - name: sku
+          in: query
+          schema: { type: string }
+        - name: locationId
+          in: query
+          schema: { type: string }
+      responses:
+        '200':
+          description: Inventory items
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items: { type: array, items: { $ref: '#/components/schemas/InventoryItem' } }
+                  total: { type: integer }
+
+  /customers:
+    get:
+      summary: Get Customers
+      operationId: getCustomers
+      tags: [Customers]
+      parameters:
+        - name: email
+          in: query
+          schema: { type: string }
+        - name: type
+          in: query
+          schema: { type: string, enum: [individual, company] }
+      responses:
+        '200':
+          description: Customer list
+
+  /orders:
+    get:
+      summary: Get Orders
+      operationId: getOrders
+      tags: [Orders]
+      parameters:
+        - name: status
+          in: query
+          schema: { type: string, enum: [confirmed, processing, shipped, delivered, cancelled] }
+        - name: limit
+          in: query
+          schema: { type: integer, default: 50 }
+        - name: offset
+          in: query
+          schema: { type: integer, default: 0 }
+      responses:
+        '200':
+          description: Order list
+    post:
+      summary: Create Sales Order
+      operationId: createSalesOrder
+      tags: [Orders]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateOrderInput' }
+      responses:
+        '201':
+          description: Order created
+
+  /orders/{id}:
+    get:
+      summary: Get Order by ID
+      operationId: getOrderById
+      tags: [Orders]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Order details
+        '404':
+          description: Order not found
+    delete:
+      summary: Cancel Order
+      operationId: cancelOrder
+      tags: [Orders]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Order cancelled
+
+  /orders/cancel:
+    post:
+      summary: Cancel Order (POST)
+      operationId: cancelOrderPost
+      tags: [Orders]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [orderId]
+              properties:
+                orderId: { type: string }
+                reason: { type: string }
+      responses:
+        '200':
+          description: Order cancelled
+
+  /orders/update:
+    post:
+      summary: Update Order
+      operationId: updateOrder
+      tags: [Orders]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/UpdateOrderInput' }
+      responses:
+        '200':
+          description: Order updated
+
+  /fulfillments:
+    get:
+      summary: Get Fulfillments
+      operationId: getFulfillments
+      tags: [Fulfillments]
+      parameters:
+        - name: orderId
+          in: query
+          schema: { type: string }
+      responses:
+        '200':
+          description: Fulfillment list
+    post:
+      summary: Create Fulfillment
+      operationId: createFulfillment
+      tags: [Fulfillments]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateFulfillmentInput' }
+      responses:
+        '201':
+          description: Fulfillment created
+
+  /returns:
+    get:
+      summary: Get Returns
+      operationId: getReturns
+      tags: [Returns]
+      parameters:
+        - name: orderId
+          in: query
+          schema: { type: string }
+      responses:
+        '200':
+          description: Return list
+    post:
+      summary: Create Return
+      operationId: createReturn
+      tags: [Returns]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateReturnInput' }
+      responses:
+        '201':
+          description: Return created
+
+components:
+  schemas:
+    Product:
+      type: object
+      properties:
+        id: { type: string }
+        name: { type: string }
+        description: { type: string }
+        status: { type: string }
+        tags: { type: array, items: { type: string } }
+        categories: { type: array, items: { type: string } }
+        options: { type: array, items: { type: object } }
+        imageURLs: { type: array, items: { type: string } }
+
+    ProductVariant:
+      type: object
+      properties:
+        id: { type: string }
+        productId: { type: string }
+        sku: { type: string }
+        title: { type: string }
+        price: { type: number }
+        currency: { type: string }
+
+    InventoryItem:
+      type: object
+      properties:
+        sku: { type: string }
+        locationId: { type: string }
+        onHand: { type: integer }
+        available: { type: integer }
+        unavailable: { type: integer }
+
+    CreateOrderInput:
+      type: object
+      required: [customer, lineItems, shippingAddress]
+      properties:
+        customer:
+          type: object
+          required: [email, firstName, lastName]
+          properties:
+            email: { type: string }
+            firstName: { type: string }
+            lastName: { type: string }
+        lineItems:
+          type: array
+          items:
+            type: object
+            required: [sku, quantity]
+            properties:
+              sku: { type: string }
+              quantity: { type: integer }
+        shippingAddress:
+          type: object
+          required: [address1, city, stateOrProvince, zipCodeOrPostalCode, country]
+          properties:
+            address1: { type: string }
+            city: { type: string }
+            stateOrProvince: { type: string }
+            zipCodeOrPostalCode: { type: string }
+            country: { type: string }
+
+    UpdateOrderInput:
+      type: object
+      required: [orderId]
+      properties:
+        orderId: { type: string }
+        status: { type: string, enum: [confirmed, processing, shipped, delivered] }
+        orderNote: { type: string }
+        shippingAddress:
+          type: object
+          properties:
+            address1: { type: string }
+            city: { type: string }
+            stateOrProvince: { type: string }
+            zipCodeOrPostalCode: { type: string }
+            country: { type: string }
+        customFields:
+          type: array
+          items:
+            type: object
+            properties:
+              name: { type: string }
+              value: { type: string }
+
+    CreateFulfillmentInput:
+      type: object
+      required: [orderId, trackingNumbers, carrier]
+      properties:
+        orderId: { type: string }
+        trackingNumbers: { type: array, items: { type: string } }
+        carrier: { type: string }
+
+    CreateReturnInput:
+      type: object
+      required: [orderId]
+      properties:
+        orderId: { type: string }
+        outcome: { type: string, enum: [refund, exchange, store_credit] }
+        returnLineItems:
+          type: array
+          items:
+            type: object
+            properties:
+              sku: { type: string }
+              quantity: { type: integer }
+              reason: { type: string }
