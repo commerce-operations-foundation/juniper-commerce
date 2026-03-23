@@ -1,5 +1,11 @@
 # Juniper Commerce — onX Reference Implementation
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![onX Standard](https://img.shields.io/badge/onX-12_operations-orange)](https://commerceopsfoundation.org)
+[![Next.js 15](https://img.shields.io/badge/Next.js-15-black?logo=next.js)](https://nextjs.org)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.9-3178C6?logo=typescript&logoColor=white)](https://typescriptlang.org)
+[![Docker Ready](https://img.shields.io/badge/Docker-ready-2496ED?logo=docker&logoColor=white)](Dockerfile)
+
 Juniper Commerce is a full outdoor-gear storefront that implements all 12 onX operations. It serves as a reference implementation for vendors building onX-compliant systems.
 
 ## What's Inside
