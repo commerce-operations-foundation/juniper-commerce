@@ -1,0 +1,53 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+build/
+.next/
+out/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+
+# Testing
+coverage/
+.nyc_output/
+
+# Deployment artifacts
+*.zip
+*.tar.gz
+
+# Temporary
+tmp/
+temp/
+*.tmp
+
+# Config files with secrets
+config.json
+*.pem
+*.key
+
+# SQLite databases
+*.db
+*.sqlite
+
+# Docker volumes
+pgdata/
